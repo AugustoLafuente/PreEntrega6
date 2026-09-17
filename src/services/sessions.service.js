@@ -2,7 +2,8 @@
  * Lógica de negocio para el registro y autenticación de usuarios.
  */
 import usersRepository from '../repositories/users.repository.js';
-import { hashPassword } from '../utils/hash.js';
+import { hashPassword, comparePassword } from '../utils/hash.js';
+import { signToken } from '../utils/jwt.js';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 8;
@@ -58,6 +59,33 @@ export const registerUser = async ({ first_name, last_name, email, password }) =
     return toSafeUser(newUser);
 };
 
+export const loginUser = async ({ email, password }) => {
+    if (!email || !password) {
+        throw new ServiceError('Credenciales inválidas', 401);
+    }
+
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const user = await usersRepository.getUserByEmail(normalizedEmail);
+
+    if (!user) {
+        throw new ServiceError('Credenciales inválidas', 401);
+    }
+
+    const isPasswordValid = await comparePassword(password, user.password);
+    if (!isPasswordValid) {
+        throw new ServiceError('Credenciales inválidas', 401);
+    }
+
+    const token = signToken({
+        id: user._id,
+        email: user.email,
+        role: user.role
+    });
+
+    return { token };
+};
+
 export default {
-    registerUser
+    registerUser,
+    loginUser
 };

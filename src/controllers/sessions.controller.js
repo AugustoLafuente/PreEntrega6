@@ -1,8 +1,8 @@
 /**
  * Controlador para la gestión de Sesiones y Autenticación
- * (login preparado para próximas entregas: JWT, Passport, cookies, etc.)
  */
 import sessionsService from '../services/sessions.service.js';
+import { config, COOKIE_NAME, COOKIE_MAX_AGE } from '../config/config.js';
 
 export const register = async (req, res) => {
     try {
@@ -30,9 +30,51 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
     try {
-        return res.status(501).json({
-            status: 'info',
-            message: 'Login pendiente de implementación'
+        const { email, password } = req.body;
+
+        const { token } = await sessionsService.loginUser({ email, password });
+
+        res.cookie(COOKIE_NAME, token, {
+            httpOnly: true,
+            sameSite: 'lax',
+            maxAge: COOKIE_MAX_AGE,
+            secure: config.nodeEnv === 'production'
+        });
+
+        return res.status(200).json({
+            status: 'success',
+            message: 'Login correcto'
+        });
+    } catch (error) {
+        const statusCode = error.statusCode || 500;
+        return res.status(statusCode).json({
+            status: 'error',
+            message: statusCode === 500 ? error.message : 'Credenciales inválidas'
+        });
+    }
+};
+
+export const current = async (req, res) => {
+    try {
+        const { id, email, role } = req.user;
+        return res.status(200).json({
+            status: 'success',
+            payload: { id, email, role }
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: 'error',
+            message: error.message
+        });
+    }
+};
+
+export const logout = async (req, res) => {
+    try {
+        res.clearCookie(COOKIE_NAME);
+        return res.status(200).json({
+            status: 'success',
+            message: 'Sesión cerrada'
         });
     } catch (error) {
         return res.status(500).json({
@@ -44,5 +86,7 @@ export const login = async (req, res) => {
 
 export default {
     register,
-    login
+    login,
+    current,
+    logout
 };
