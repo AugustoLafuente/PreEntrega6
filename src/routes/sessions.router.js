@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import { register, login, current, logout } from '../controllers/sessions.controller.js';
-import { auth } from '../middlewares/auth.middleware.js';
+import { authenticateRegister, authenticateLogin, authenticateCurrent } from '../config/passport.config.js';
 
 const router = Router();
 
-router.post('/register', register);
-router.post('/login', login);
-router.get('/current', auth, current);
+router.post('/register', authenticateRegister, register);
+router.post('/login', authenticateLogin, login);
+router.get('/current', authenticateCurrent, current);
 router.post('/logout', logout);
 
 export default router;

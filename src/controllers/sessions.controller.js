@@ -1,27 +1,20 @@
 /**
- * Controlador para la gestión de Sesiones y Autenticación
+ * Controlador para la gestión de Sesiones y Autenticación.
+ * La validación de datos y credenciales vive en las estrategias de Passport
+ * (src/config/passport.config.js); acá solo se genera el JWT, se setea la
+ * cookie y se da forma a la respuesta.
  */
-import sessionsService from '../services/sessions.service.js';
+import { signToken } from '../utils/jwt.js';
 import { config, COOKIE_NAME, COOKIE_MAX_AGE } from '../config/config.js';
 
 export const register = async (req, res) => {
     try {
-        const { first_name, last_name, email, password } = req.body;
-
-        const payload = await sessionsService.registerUser({
-            first_name,
-            last_name,
-            email,
-            password
-        });
-
         return res.status(201).json({
             status: 'success',
-            payload
+            payload: req.user
         });
     } catch (error) {
-        const statusCode = error.statusCode || 500;
-        return res.status(statusCode).json({
+        return res.status(500).json({
             status: 'error',
             message: error.message
         });
@@ -30,9 +23,9 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { id, email, role } = req.user;
 
-        const { token } = await sessionsService.loginUser({ email, password });
+        const token = signToken({ id, email, role });
 
         res.cookie(COOKIE_NAME, token, {
             httpOnly: true,
@@ -46,10 +39,9 @@ export const login = async (req, res) => {
             message: 'Login correcto'
         });
     } catch (error) {
-        const statusCode = error.statusCode || 500;
-        return res.status(statusCode).json({
+        return res.status(500).json({
             status: 'error',
-            message: statusCode === 500 ? error.message : 'Credenciales inválidas'
+            message: error.message
         });
     }
 };
@@ -71,7 +63,11 @@ export const current = async (req, res) => {
 
 export const logout = async (req, res) => {
     try {
-        res.clearCookie(COOKIE_NAME);
+        res.clearCookie(COOKIE_NAME, {
+            httpOnly: true,
+            sameSite: 'lax',
+            secure: config.nodeEnv === 'production'
+        });
         return res.status(200).json({
             status: 'success',
             message: 'Sesión cerrada'
