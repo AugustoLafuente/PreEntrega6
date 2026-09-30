@@ -157,14 +157,4 @@ export const authenticateLogin = (req, res, next) => {
     })(req, res, next);
 };
 
-export const authenticateCurrent = (req, res, next) => {
-    passport.authenticate('current', { session: false }, (err, user) => {
-        if (err || !user) {
-            return res.status(401).json({ status: 'error', message: 'No autenticado' });
-        }
-        req.user = user;
-        return next();
-    })(req, res, next);
-};
-
 export default initializePassport;

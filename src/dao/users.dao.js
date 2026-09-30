@@ -15,8 +15,13 @@ export const findById = async (id) => {
     return User.findById(id);
 };
 
+export const findAll = async () => {
+    return User.find().select('-password');
+};
+
 export default {
     create,
     findByEmail,
-    findById
+    findById,
+    findAll
 };

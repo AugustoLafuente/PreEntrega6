@@ -16,8 +16,13 @@ export const getUserById = async (id) => {
     return usersDao.findById(id);
 };
 
+export const getAllUsers = async () => {
+    return usersDao.findAll();
+};
+
 export default {
     createUser,
     getUserByEmail,
-    getUserById
+    getUserById,
+    getAllUsers
 };
