@@ -8,8 +8,12 @@ export const createEvent = async (eventData) => {
     return eventsDao.create(eventData);
 };
 
-export const getPublishedEvents = async () => {
-    return eventsDao.findAll({ status: 'active' });
+export const findEvents = async (filter, pagination) => {
+    return eventsDao.findPaginated(filter, pagination);
+};
+
+export const countEvents = async (filter) => {
+    return eventsDao.count(filter);
 };
 
 export const getEventById = async (id) => {
@@ -22,7 +26,8 @@ export const updateEvent = async (id, updates) => {
 
 export default {
     createEvent,
-    getPublishedEvents,
+    findEvents,
+    countEvents,
     getEventById,
     updateEvent
 };

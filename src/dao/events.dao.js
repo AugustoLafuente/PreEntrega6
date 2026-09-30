@@ -7,8 +7,13 @@ export const create = async (eventData) => {
     return Event.create(eventData);
 };
 
-export const findAll = async (filter = {}) => {
-    return Event.find(filter);
+export const findPaginated = async (filter, { page, limit, sort }) => {
+    const skip = (page - 1) * limit;
+    return Event.find(filter).sort(sort).skip(skip).limit(limit);
+};
+
+export const count = async (filter) => {
+    return Event.countDocuments(filter);
 };
 
 export const findById = async (id) => {
@@ -21,7 +26,8 @@ export const updateById = async (id, updates) => {
 
 export default {
     create,
-    findAll,
+    findPaginated,
+    count,
     findById,
     updateById
 };

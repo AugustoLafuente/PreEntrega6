@@ -1,20 +1,23 @@
 import { Router } from 'express';
-import { getEvents, createEvent, updateEvent, cancelEvent } from '../controllers/events.controller.js';
+import { getEvents, getEventById, createEvent, updateEvent, updateEventStatus } from '../controllers/events.controller.js';
 import auth from '../middlewares/auth.middleware.js';
 import authorize from '../middlewares/authorize.middleware.js';
 
 const router = Router();
 
-// GET /api/events → público: cualquiera puede consultar los eventos publicados
+// GET /api/events → público, admite filtros + paginación + ordenamiento
 router.get('/', getEvents);
 
-// POST /api/events → solo organizer o admin pueden crear eventos
+// GET /api/events/:id → público
+router.get('/:id', getEventById);
+
+// POST /api/events → solo organizer o admin
 router.post('/', auth, authorize('organizer', 'admin'), createEvent);
 
-// PUT /api/events/:id → organizer solo sobre sus propios eventos, admin sobre cualquiera
+// PUT /api/events/:id → dueño del evento o admin
 router.put('/:id', auth, authorize('organizer', 'admin'), updateEvent);
 
-// DELETE /api/events/:id → cancela el evento (organizer propio, admin cualquiera)
-router.delete('/:id', auth, authorize('organizer', 'admin'), cancelEvent);
+// PATCH /api/events/:id/status → dueño del evento o admin (cancelar = status 'cancelled')
+router.patch('/:id/status', auth, authorize('organizer', 'admin'), updateEventStatus);
 
 export default router;

@@ -4,7 +4,7 @@
  */
 import mongoose from 'mongoose';
 
-const EVENT_STATUSES = ['active', 'cancelled'];
+export const EVENT_STATUSES = ['draft', 'published', 'cancelled', 'finished'];
 
 const eventSchema = new mongoose.Schema(
     {
@@ -15,15 +15,16 @@ const eventSchema = new mongoose.Schema(
         },
         description: {
             type: String,
+            required: true,
             trim: true
         },
         sport_type: {
             type: String, // Ej: 'Fútbol', 'Running', 'Básquetbol', 'Tenis', etc.
-            required: true,
             trim: true
         },
         category: {
             type: String, // Ej: 'Amateur', 'Profesional', 'Sub-20', etc.
+            required: true,
             trim: true
         },
         date: {
@@ -48,7 +49,7 @@ const eventSchema = new mongoose.Schema(
         status: {
             type: String,
             enum: EVENT_STATUSES,
-            default: 'active'
+            default: 'draft'
         },
         organizer: {
             type: mongoose.Schema.Types.ObjectId,

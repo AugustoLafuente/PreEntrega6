@@ -1,17 +1,35 @@
 /**
- * Controlador para la gestión de Eventos
+ * Controlador para la gestión de Eventos: solo maneja request/response,
+ * toda la lógica de negocio vive en events.service.js.
  */
 import eventsService from '../services/events.service.js';
 
 export const getEvents = async (req, res) => {
     try {
-        const events = await eventsService.listPublishedEvents();
+        const result = await eventsService.listEvents(req.query);
         return res.status(200).json({
             status: 'success',
-            payload: events
+            ...result
         });
     } catch (error) {
-        return res.status(500).json({
+        const statusCode = error.statusCode || 500;
+        return res.status(statusCode).json({
+            status: 'error',
+            message: error.message
+        });
+    }
+};
+
+export const getEventById = async (req, res) => {
+    try {
+        const event = await eventsService.getEventById(req.params.id);
+        return res.status(200).json({
+            status: 'success',
+            payload: event
+        });
+    } catch (error) {
+        const statusCode = error.statusCode || 500;
+        return res.status(statusCode).json({
             status: 'error',
             message: error.message
         });
@@ -50,9 +68,9 @@ export const updateEvent = async (req, res) => {
     }
 };
 
-export const cancelEvent = async (req, res) => {
+export const updateEventStatus = async (req, res) => {
     try {
-        const event = await eventsService.cancelEvent(req.params.id, req.user);
+        const event = await eventsService.updateEventStatus(req.params.id, req.body.status, req.user);
         return res.status(200).json({
             status: 'success',
             payload: event
@@ -68,7 +86,8 @@ export const cancelEvent = async (req, res) => {
 
 export default {
     getEvents,
+    getEventById,
     createEvent,
     updateEvent,
-    cancelEvent
+    updateEventStatus
 };
